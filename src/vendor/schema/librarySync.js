@@ -51,6 +51,25 @@ export function diffLibraryStructure(from, to) {
 }
 
 /**
+ * Per-type sync status for a project snapshot vs its source global — drives the type-card
+ * badges. 'insync' = identical to global, 'differs' = forked here or updated in global
+ * (indistinguishable without history; both mean "Update replaces local"), 'local' = only
+ * in this snapshot. Types only in the GLOBAL are not statuses here (no card to badge) —
+ * read them off diffLibraryStructure().addedTypes.
+ *
+ * @returns {Record<string, 'insync' | 'differs' | 'local'>}
+ */
+export function typeSyncStatus(local, global) {
+  const l = local?.entries ?? {};
+  const g = global?.entries ?? {};
+  const statuses = {};
+  for (const key of Object.keys(l)) {
+    statuses[key] = !g[key] ? 'local' : json(l[key]) !== json(g[key]) ? 'differs' : 'insync';
+  }
+  return statuses;
+}
+
+/**
  * Graft `source`'s structure onto `target`: entries + themeSchema move; everything
  * project-owned stays `target`'s. The target's themes' token VALUES are reconciled to
  * the incoming themeSchema (new tokens defaulted, removed tokens dropped) — in BOTH

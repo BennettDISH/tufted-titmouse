@@ -31,5 +31,9 @@ export const LibraryEntry = z
     icon: z.string().optional(),
     category: z.string().optional(),
     nodeType: z.string().optional(),
+    // Handoff notes for AI generation: what this type is for and how to fill it well
+    // (e.g. "hero image should be wide and scenic; flip cards pair a question with a
+    // one-sentence answer"). Lives in the library DATA so it clones/syncs with the type.
+    aiGuidance: z.string().optional(),
   })
   .strict();

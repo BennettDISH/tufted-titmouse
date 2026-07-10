@@ -30,7 +30,7 @@ export function renderNode(node, ctx, keyPath) {
   if (library && !entry) {
     throw new Error(`Library has no entry for type "${typeKey}" (node "${node.id}").`);
   }
-  if (entry) validateNodeData({ node, entry });
+  if (entry) validateNodeData({ node, entry, components: library?.entries });
 
   // 4. Children resolved from the flat node map by id.
   const renderChildren = () =>

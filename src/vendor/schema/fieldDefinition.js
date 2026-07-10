@@ -4,10 +4,10 @@ import { z } from 'zod';
  * The kinds a schema field can be. Scalars cover the common cases; `enum`, `array`,
  * and `object` make the schema recursive so a field can describe structured content.
  *
- * @typedef {('string'|'text'|'richtext'|'number'|'boolean'|'image'|'video'|'file'|'color'|'enum'|'array'|'object')} FieldType
+ * @typedef {('string'|'text'|'richtext'|'number'|'boolean'|'image'|'video'|'audio'|'file'|'color'|'enum'|'array'|'object'|'component')} FieldType
  */
 export const FieldType = z.enum([
-  'string', 'text', 'richtext', 'number', 'boolean', 'image', 'video', 'file', 'color', 'enum', 'array', 'object',
+  'string', 'text', 'richtext', 'number', 'boolean', 'image', 'video', 'audio', 'file', 'color', 'enum', 'array', 'object', 'component',
 ]);
 
 /** Primitive item type for an `array` of simple values. */
@@ -69,6 +69,11 @@ export const FieldDefinition = z.lazy(() =>
       itemType: ItemType.optional(), // array of primitives
       itemSchema: z.record(z.string(), FieldDefinition).optional(), // array of objects
       fields: z.record(z.string(), FieldDefinition).optional(), // object
+      // component: a slot holding a reusable library entry as `{ componentKey, data }` —
+      // define the fragment once (an entry), pull it into any type. Pin one kind with
+      // `componentKey`, or offer a choice with `allowedComponents` (entry keys).
+      componentKey: z.string().optional(),
+      allowedComponents: z.array(z.string()).optional(),
       // Validation rules — advisory, surfaced as editor warnings on filled-in values (never
       // render-blocking, so adding a rule can't break existing content — the Trap 3 invariant).
       minLength: z.number().int().nonnegative().optional(), // string/text/richtext
@@ -91,6 +96,9 @@ export const FieldDefinition = z.lazy(() =>
       if (field.type === 'object' && !field.fields) {
         ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'object field requires `fields`', path: ['fields'] });
       }
+      // component: an unconfigured slot (no componentKey, empty allowedComponents) stays
+      // VALID — the schema builder saves mid-edit and the content editor shows a helpful
+      // empty-slot message instead of the library refusing to save (Trap 3 spirit).
       if (field.pattern !== undefined) {
         try {
           new RegExp(field.pattern);

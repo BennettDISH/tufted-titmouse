@@ -2,17 +2,21 @@ import { z } from 'zod';
 
 /**
  * Build a Zod validator for one field definition's VALUE. Recursive for the structured
- * kinds (`object` → nested fields, `array` → items, `enum` → options).
+ * kinds (`object` → nested fields, `array` → items, `enum` → options, `component` → the
+ * referenced entry's schema).
  *
  * @param {import('../schema/fieldDefinition.js').FieldDefinition} field
+ * @param {Record<string, { schema?: object }>} [components] library entries, for resolving
+ *   component slots — optional so library-blind callers still get shape validation.
  */
-function fieldToZod(field) {
+function fieldToZod(field, components) {
   switch (field.type) {
     case 'string':
     case 'text':
     case 'richtext':
     case 'image':
     case 'video':
+    case 'audio':
     case 'file':
     case 'color':
       return z.string();
@@ -28,11 +32,31 @@ function fieldToZod(field) {
       return values.length ? z.enum(values) : z.never();
     }
     case 'object':
-      return buildObjectSchema(field.fields ?? {});
+      return buildObjectSchema(field.fields ?? {}, undefined, components);
     case 'array':
       // Array of objects (itemSchema) or of primitives (itemType).
-      if (field.itemSchema) return z.array(buildObjectSchema(field.itemSchema));
-      return z.array(fieldToZod({ type: field.itemType ?? 'string' }));
+      if (field.itemSchema) return z.array(buildObjectSchema(field.itemSchema, undefined, components));
+      return z.array(fieldToZod({ type: field.itemType ?? 'string' }, components));
+    case 'component':
+      // A slot holding a reusable entry: { componentKey, data }. With the components map
+      // available the inner data validates against that entry's schema; without it the
+      // shape alone is enforced (library-blind callers).
+      return z
+        .object({
+          componentKey: z.string(),
+          data: z.record(z.string(), z.unknown()).default({}),
+        })
+        .strict()
+        .superRefine((value, ctx) => {
+          const compSchema = components?.[value.componentKey]?.schema;
+          if (!compSchema) return;
+          const result = buildObjectSchema(compSchema, value.data ?? {}, components).safeParse(value.data ?? {});
+          if (!result.success) {
+            for (const issue of result.error.issues) {
+              ctx.addIssue({ code: z.ZodIssueCode.custom, message: issue.message, path: ['data', ...issue.path] });
+            }
+          }
+        });
     default:
       return z.unknown();
   }
@@ -54,11 +78,12 @@ function isActive(field, data) {
  *
  * @param {Record<string, import('../schema/fieldDefinition.js').FieldDefinition>} fields
  * @param {Record<string, unknown>} [data] node data, used to evaluate field visibility
+ * @param {Record<string, { schema?: object }>} [components] library entries for component slots
  */
-function buildObjectSchema(fields, data) {
+function buildObjectSchema(fields, data, components) {
   const shape = {};
   for (const [name, field] of Object.entries(fields)) {
-    let valueSchema = fieldToZod(field);
+    let valueSchema = fieldToZod(field, components);
     const required = field.required && (data === undefined || isActive(field, data));
     if (!required) valueSchema = valueSchema.optional();
     shape[name] = valueSchema;
@@ -71,14 +96,18 @@ function buildObjectSchema(fields, data) {
  * render time (plan §4.4 — the one required safeguard). Throws a loud, clear error on
  * drift: an undeclared field, a missing required field, or a wrong value type.
  *
+ * Pass `components` (the library's entries map) when available so component slots
+ * deep-validate against their entry's schema; without it slots check shape only.
+ *
  * @param {{
  *   node: import('../schema/contentNode.js').ContentNode,
  *   entry: import('../schema/libraryEntry.js').LibraryEntry,
+ *   components?: Record<string, { schema?: object }>,
  * }} args
  */
-export function validateNodeData({ node, entry }) {
+export function validateNodeData({ node, entry, components }) {
   const data = node.editor?.data ?? {};
-  const dataSchema = buildObjectSchema(entry.schema ?? {}, data);
+  const dataSchema = buildObjectSchema(entry.schema ?? {}, data, components);
   const result = dataSchema.safeParse(data);
   if (!result.success) {
     const issues = result.error.issues

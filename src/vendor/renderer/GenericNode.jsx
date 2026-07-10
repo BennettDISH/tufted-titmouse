@@ -22,6 +22,19 @@ const S = {
 function Value({ field, value }) {
   const type = field?.type;
 
+  if (type === 'component') {
+    // A reusable-entry slot: show which kind fills it, then its data generically (the
+    // component's own schema isn't at hand here — the object fallback reads fine).
+    const key = value?.componentKey;
+    if (!key) return <span style={S.empty}>(empty slot)</span>;
+    return (
+      <div style={S.group}>
+        <div style={S.type}>⧉ {key}</div>
+        <Value field={{ type: 'object', fields: {} }} value={value?.data ?? {}} />
+      </div>
+    );
+  }
+
   if (type === 'object' || (!type && value && typeof value === 'object' && !Array.isArray(value))) {
     const fields = field?.fields ?? {};
     const entries = Object.entries(value ?? {});
@@ -48,6 +61,7 @@ function Value({ field, value }) {
   if (type === 'boolean' || typeof value === 'boolean') return <span>{value ? 'Yes' : 'No'}</span>;
   if (type === 'image' && value) return <img style={S.img} src={String(value)} alt="" />;
   if (type === 'video' && value) return <video style={S.img} src={String(value)} controls preload="metadata" />;
+  if (type === 'audio' && value) return <audio src={String(value)} controls preload="metadata" />;
   if (type === 'file' && value) return <a href={String(value)} target="_blank" rel="noreferrer">{String(value).split('/').pop()}</a>;
   if (type === 'color' && value) return <span><span style={S.swatch(String(value))} />{String(value)}</span>;
   if (value === undefined || value === null || value === '') return <span style={S.empty}>—</span>;
