@@ -1,0 +1,3 @@
+Vendored from content-platform on 2026-07-08T18:43:20.940Z
+Source: src/schema, src/validation, src/renderer, src/embed/protocol.js
+Refresh with: npm run sync-vendor

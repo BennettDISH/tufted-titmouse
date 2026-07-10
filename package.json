@@ -1,0 +1,27 @@
+{
+  "name": "tufted-titmouse",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Content pack + player for content-platform JSON: the Activities library — interactive learning activities ported from the embedded-projects family. Embedded in the editor for live preview, standalone for published activity sets.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "start": "vite preview --host --port $PORT",
+    "preview": "vite preview",
+    "sync-vendor": "node scripts/sync-vendor.mjs",
+    "install-library": "node scripts/install-library.mjs",
+    "make-sample": "node scripts/make-sample.mjs",
+    "check": "vite-node scripts/render-check.jsx"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "vite": "^5.4.2",
+    "vite-node": "^2.1.0"
+  }
+}

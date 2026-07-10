@@ -1,0 +1,6 @@
+[build]
+# Railpack runs its own install step first — don't repeat `npm ci` here (EBUSY on its cache).
+buildCommand = "npm run build"
+
+[deploy]
+startCommand = "npm start"

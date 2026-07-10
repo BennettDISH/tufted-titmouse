@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tufted Titmouse</title>
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; }
+      /* Page chrome lives here, not in components: the vendored ThemedDocument sets the
+         --theme-* vars on this wrapper, so a lone activity at the document root gets the
+         themed page background without needing an activitySet parent. */
+      .player-themed {
+        min-height: 100vh;
+        background: var(--theme-page-background, #1e2340);
+        color: var(--theme-text-color, #f2f4ff);
+        font-family: var(--theme-body-font, system-ui, -apple-system, sans-serif);
+        line-height: 1.55;
+        padding: 0.25rem 1rem 3rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
