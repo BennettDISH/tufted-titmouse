@@ -4,7 +4,7 @@
   "label": "Activities",
   "description": "Interactive learning activities ported from the standalone embedded-activities family (portfolio/embedded-projects). Each activity type is a self-contained interaction; a project can be one activity (embed/LMS style) or a set. Type keys match component keys in src/packs/activities.",
   "version": "1.0.0",
-  "preview": { "mode": "hosted", "targetUrl": "", "embedPath": "/?embed=1" },
+  "preview": { "mode": "hosted", "targetUrl": "https://tufted-titmouse-production.up.railway.app", "embedPath": "/?embed=1" },
   "entries": {
     "activitySet": {
       "key": "activitySet",

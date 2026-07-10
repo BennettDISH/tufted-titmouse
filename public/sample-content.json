@@ -11,7 +11,7 @@
     "version": "1.0.0",
     "preview": {
       "mode": "hosted",
-      "targetUrl": "",
+      "targetUrl": "https://tufted-titmouse-production.up.railway.app",
       "embedPath": "/?embed=1"
     },
     "entries": {
