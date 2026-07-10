@@ -2,10 +2,15 @@
 
 A **content pack** for [content-platform](https://github.com/BennettDISH/content-platform),
 shipped as a deployable player. Content packs are named after birds; kingfisher carries the
-general web-page set — **tufted-titmouse carries the Activities library**: interactive
-learning activities ported from the standalone embedded-projects family (matching, compare
-slider, speed sort — more to come). Same architecture, same vendored renderer, zero shared
-runtime with kingfisher.
+general web-page set — **tufted-titmouse is the personal sandbox**: activities and
+experiments not meant for client sites. Same architecture, same vendored renderer, zero
+shared runtime with kingfisher.
+
+**The placement rule:** anything a client site could use goes in **kingfisher** (as an
+in-page block — that's where matching, compare slider, and speed sort ended up, in
+`src/packs/learning/`). Only personal/experimental stuff lives here. This pack still
+carries copies of those three components so existing titmouse-rendered projects keep
+working, but their canonical home (and their library entries) is kingfisher.
 
 The same code serves two jobs:
 
@@ -41,8 +46,9 @@ standalone HTML file with an inline `window.activityData` config. To port one:
 3. Add it to `scripts/sample-document.mjs`, run `npm run make-sample` + `npm run check`.
 4. Push (Railway deploys), then `npm run install-library` to update the CMS contract.
 
-Still to port: branching activity, drag flow chart, jar/word sorting, temp gauge, and the
-media-based ones (decision video, audio activity) once they get R2-backed video/audio fields.
+Still to port (check the placement rule first — most of these belong in kingfisher):
+branching activity, drag flow chart, jar/word sorting, temp gauge, and the media-based
+ones (decision video, audio activity) once they get R2-backed video/audio fields.
 
 ## Dev
 
