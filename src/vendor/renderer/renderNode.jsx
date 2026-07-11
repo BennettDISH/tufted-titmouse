@@ -2,6 +2,7 @@ import React from 'react';
 import { findEntry } from '../schema/library.js';
 import { validateNodeData } from '../validation/validateNodeData.js';
 import { resolveTypeValues } from './themeValues.js';
+import { themeToCssVars } from './themeVars.js';
 import GenericNode from './GenericNode.jsx';
 
 /**
@@ -47,9 +48,21 @@ export function renderNode(node, ctx, keyPath) {
   // content, so a stale/hand-edited key can't shadow the active theme.
   const data = { ...(node.editor.data ?? {}), ...resolveTypeValues(library, typeKey) };
   const Component = registry[typeKey];
-  const rendered = Component
+  let rendered = Component
     ? <Component key={keyPath ?? node.id} {...data} renderChildren={renderChildren} />
     : <GenericNode key={keyPath ?? node.id} node={node} entry={entry} data={data} renderChildren={renderChildren} />;
+
+  // Per-page theme overrides (meta.themeOverrides): re-declare the --theme-* variables on
+  // a zero-layout wrapper so the override cascades this subtree only — everywhere this
+  // renderer runs (editor preview, players, published sites), with the global theme intact.
+  const themeOverrides = node.meta?.themeOverrides;
+  if (themeOverrides && typeof themeOverrides === 'object' && Object.keys(themeOverrides).length) {
+    rendered = (
+      <div key={keyPath ?? node.id} style={{ display: 'contents', ...themeToCssVars(themeOverrides) }}>
+        {rendered}
+      </div>
+    );
+  }
 
   // Editor-selection highlight (embedded preview): a plain outlined wrapper — outline
   // doesn't shift layout, though the extra div can affect flex/grid parents (accepted
